@@ -1,0 +1,418 @@
+-- DEKUz Menu + Auto Equip (LocalScript)
+-- โทนน้ำเงิน-ดำ-ฟ้า + สีรุ้ง + เปิด/ปิด + เลื่อนได้ + Auto Equip
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- สร้าง ScreenGui
+local gui = Instance.new("ScreenGui")
+gui.Name = "DEKUzMenu"
+gui.ResetOnSpawn = false
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.Parent = playerGui
+
+-- ปุ่มเปิด/ปิด
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name = "ToggleButton"
+toggleBtn.Size = UDim2.new(0, 130, 0, 38)
+toggleBtn.Position = UDim2.new(1, -150, 0, 18)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+toggleBtn.Text = "💙 DEKUz"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 16
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.BorderSizePixel = 0
+toggleBtn.AutoButtonColor = false
+toggleBtn.Parent = gui
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0, 10)
+
+-- Main Frame
+local main = Instance.new("Frame")
+main.Name = "Main"
+main.Size = UDim2.new(0, 480, 0, 290)
+main.Position = UDim2.new(0.5, -240, 0.5, -145)
+main.BackgroundColor3 = Color3.fromRGB(12, 18, 38)
+main.BorderSizePixel = 0
+main.Visible = false
+main.Parent = gui
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 14)
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(0, 160, 255)
+stroke.Thickness = 1.5
+stroke.Transparency = 0.4
+stroke.Parent = main
+
+-- TopBar
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1, 0, 0, 40)
+top.BackgroundColor3 = Color3.fromRGB(0, 120, 220)
+top.BorderSizePixel = 0
+top.Parent = main
+Instance.new("UICorner", top).CornerRadius = UDim.new(0, 14)
+
+local topFix = Instance.new("Frame")
+topFix.Size = UDim2.new(1, 0, 0, 14)
+topFix.Position = UDim2.new(0, 0, 1, -14)
+topFix.BackgroundColor3 = Color3.fromRGB(0, 120, 220)
+topFix.BorderSizePixel = 0
+topFix.Parent = top
+
+-- Title + สีรุ้ง
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 1, 0)
+title.BackgroundTransparency = 1
+title.Text = "💙 DEKUz เมนู"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Parent = top
+
+local rainbowTime = 0
+RunService.RenderStepped:Connect(function(dt)
+	rainbowTime = rainbowTime + dt * 0.6
+	title.TextColor3 = Color3.fromHSV(rainbowTime % 1, 0.85, 1)
+end)
+
+-- Sidebar
+local side = Instance.new("ScrollingFrame")
+side.Size = UDim2.new(0, 145, 1, -40)
+side.Position = UDim2.new(0, 0, 0, 40)
+side.BackgroundColor3 = Color3.fromRGB(16, 26, 52)
+side.BorderSizePixel = 0
+side.ScrollBarThickness = 4
+side.ScrollBarImageColor3 = Color3.fromRGB(0, 160, 255)
+side.CanvasSize = UDim2.new(0, 0, 0, 0)
+side.AutomaticCanvasSize = Enum.AutomaticSize.Y
+side.Parent = main
+
+local sideList = Instance.new("UIListLayout")
+sideList.Padding = UDim.new(0, 7)
+sideList.SortOrder = Enum.SortOrder.LayoutOrder
+sideList.Parent = side
+
+local sidePad = Instance.new("UIPadding")
+sidePad.PaddingTop = UDim.new(0, 10)
+sidePad.PaddingLeft = UDim.new(0, 8)
+sidePad.PaddingRight = UDim.new(0, 8)
+sidePad.PaddingBottom = UDim.new(0, 10)
+sidePad.Parent = side
+
+-- Content
+local content = Instance.new("ScrollingFrame")
+content.Size = UDim2.new(1, -145, 1, -40)
+content.Position = UDim2.new(0, 145, 0, 40)
+content.BackgroundColor3 = Color3.fromRGB(10, 16, 34)
+content.BorderSizePixel = 0
+content.ScrollBarThickness = 5
+content.ScrollBarImageColor3 = Color3.fromRGB(0, 160, 255)
+content.CanvasSize = UDim2.new(0, 0, 0, 0)
+content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+content.Parent = main
+
+local pages = {}
+
+local function createPage(name)
+	local page = Instance.new("Frame")
+	page.Name = name
+	page.Size = UDim2.new(1, 0, 0, 0)
+	page.AutomaticSize = Enum.AutomaticSize.Y
+	page.BackgroundTransparency = 1
+	page.Visible = false
+	page.Parent = content
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -30, 0, 36)
+	label.Position = UDim2.new(0, 18, 0, 14)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.GothamBold
+	label.TextSize = 22
+	label.TextColor3 = Color3.fromRGB(180, 220, 255)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Text = name
+	label.Parent = page
+
+	pages[name] = page
+	return page
+end
+
+createPage("หน้าหลัก")
+createPage("ทักษะ")
+createPage("กระเป๋า")
+createPage("ดันเจี้ยน")
+createPage("ตั้งค่า")
+createPage("เครดิต")
+
+pages["หน้าหลัก"].Visible = true
+
+local function openPage(name)
+	for _, p in pairs(pages) do
+		p.Visible = false
+	end
+	if pages[name] then
+		pages[name].Visible = true
+	end
+end
+
+local function addButton(text, pageName)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1, 0, 0, 36)
+	b.BackgroundColor3 = Color3.fromRGB(25, 70, 160)
+	b.TextColor3 = Color3.new(1, 1, 1)
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 15
+	b.Text = text
+	b.AutoButtonColor = false
+	b.Parent = side
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+
+	b.MouseEnter:Connect(function()
+		TweenService:Create(b, TweenInfo.new(0.18), {
+			BackgroundColor3 = Color3.fromRGB(0, 160, 255)
+		}):Play()
+	end)
+
+	b.MouseLeave:Connect(function()
+		TweenService:Create(b, TweenInfo.new(0.18), {
+			BackgroundColor3 = Color3.fromRGB(25, 70, 160)
+		}):Play()
+	end)
+
+	b.MouseButton1Click:Connect(function()
+		openPage(pageName)
+	end)
+end
+
+addButton("🏠  หน้าหลัก", "หน้าหลัก")
+addButton("⚔  ทักษะ", "ทักษะ")
+addButton("🎒  กระเป๋า", "กระเป๋า")
+addButton("🗺  ดันเจี้ยน", "ดันเจี้ยน")
+addButton("⚙  ตั้งค่า", "ตั้งค่า")
+addButton("⭐  เครดิต", "เครดิต")
+
+-- เครดิต
+local creditLabel = Instance.new("TextLabel")
+creditLabel.Size = UDim2.new(1, -30, 0, 70)
+creditLabel.Position = UDim2.new(0, 18, 0, 60)
+creditLabel.BackgroundTransparency = 1
+creditLabel.Font = Enum.Font.Gotham
+creditLabel.TextSize = 18
+creditLabel.TextColor3 = Color3.fromRGB(200, 220, 255)
+creditLabel.TextXAlignment = Enum.TextXAlignment.Left
+creditLabel.Text = "ผู้พัฒนา : PF👑\nขอบคุณที่ใช้ DEKUz เมนู"
+creditLabel.Parent = pages["เครดิต"]
+
+-- ====================== ระบบ Auto Equip (หน้า กระเป๋า) ======================
+
+local inventoryPage = pages["กระเป๋า"]
+
+local selectedWeapon = nil
+local autoEquipEnabled = false
+local weaponList = {}
+local currentIndex = 1
+
+local function updateWeaponList()
+	weaponList = {}
+	local backpack = player:FindFirstChild("Backpack")
+	if backpack then
+		for _, tool in pairs(backpack:GetChildren()) do
+			if tool:IsA("Tool") then
+				table.insert(weaponList, tool.Name)
+			end
+		end
+	end
+end
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, -30, 0, 30)
+titleLabel.Position = UDim2.new(0, 18, 0, 55)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 18
+titleLabel.TextColor3 = Color3.fromRGB(180, 220, 255)
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Text = "ระบบสวมใส่อาวุธอัตโนมัติ"
+titleLabel.Parent = inventoryPage
+
+local refreshBtn = Instance.new("TextButton")
+refreshBtn.Size = UDim2.new(0, 140, 0, 32)
+refreshBtn.Position = UDim2.new(0, 18, 0, 95)
+refreshBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+refreshBtn.Text = "รีเฟรชอาวุธ"
+refreshBtn.Font = Enum.Font.GothamBold
+refreshBtn.TextSize = 14
+refreshBtn.TextColor3 = Color3.new(1, 1, 1)
+refreshBtn.Parent = inventoryPage
+Instance.new("UICorner", refreshBtn).CornerRadius = UDim.new(0, 6)
+
+local weaponBtn = Instance.new("TextButton")
+weaponBtn.Size = UDim2.new(0, 220, 0, 32)
+weaponBtn.Position = UDim2.new(0, 170, 0, 95)
+weaponBtn.BackgroundColor3 = Color3.fromRGB(30, 50, 90)
+weaponBtn.Text = "เลือกอาวุธ..."
+weaponBtn.Font = Enum.Font.Gotham
+weaponBtn.TextSize = 14
+weaponBtn.TextColor3 = Color3.new(1, 1, 1)
+weaponBtn.Parent = inventoryPage
+Instance.new("UICorner", weaponBtn).CornerRadius = UDim.new(0, 6)
+
+refreshBtn.MouseButton1Click:Connect(function()
+	updateWeaponList()
+	if #weaponList > 0 then
+		currentIndex = 1
+		selectedWeapon = weaponList[1]
+		weaponBtn.Text = selectedWeapon
+	else
+		weaponBtn.Text = "ไม่มีอาวุธ"
+		selectedWeapon = nil
+	end
+end)
+
+weaponBtn.MouseButton1Click:Connect(function()
+	updateWeaponList()
+	if #weaponList == 0 then
+		weaponBtn.Text = "ไม่มีอาวุธ"
+		return
+	end
+	currentIndex = currentIndex + 1
+	if currentIndex > #weaponList then
+		currentIndex = 1
+	end
+	selectedWeapon = weaponList[currentIndex]
+	weaponBtn.Text = selectedWeapon
+end)
+
+local autoBtn = Instance.new("TextButton")
+autoBtn.Size = UDim2.new(0, 180, 0, 36)
+autoBtn.Position = UDim2.new(0, 18, 0, 145)
+autoBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+autoBtn.Text = "Auto Equip: ปิด"
+autoBtn.Font = Enum.Font.GothamBold
+autoBtn.TextSize = 15
+autoBtn.TextColor3 = Color3.new(1, 1, 1)
+autoBtn.Parent = inventoryPage
+Instance.new("UICorner", autoBtn).CornerRadius = UDim.new(0, 8)
+
+autoBtn.MouseButton1Click:Connect(function()
+	autoEquipEnabled = not autoEquipEnabled
+	if autoEquipEnabled then
+		autoBtn.Text = "Auto Equip: เปิด"
+		autoBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 80)
+	else
+		autoBtn.Text = "Auto Equip: ปิด"
+		autoBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	end
+end)
+
+local inventorySkill = skill["ทักษะ"]
+
+section1:addToggle("Fast Attack", _G.FastAttack, function(value)
+    _G.FastAttack = value
+end)
+
+local themes = {
+    Background = Color3.fromRGB(24, 24, 24),
+    Glow = Color3.fromRGB(0, 0, 0),
+    Accent = Color3.fromRGB(10, 10, 10),
+    LightContrast = Color3.fromRGB(20, 20, 20),
+    DarkContrast = Color3.fromRGB(14, 14, 14),
+    TextColor = Color3.fromRGB(255, 255, 255)
+}
+
+for theme, color in pairs(themes) do
+    colors:addColorPicker(theme, color, function(color3)
+        venyx:setTheme(theme, color3)
+    end)
+end
+
+venyx:SelectPage(venyx.pages[1], true)
+
+spawn(function()
+    game:GetService("RunService").RenderStepped:Connect(function()
+        pcall(function()
+            local Combat = require(game:GetService("Players").LocalPlayer.PlayerScripts.CombatFramework)
+            local Camera = require(game:GetService("Players").LocalPlayer.PlayerScripts.CombatFramework.CameraShaker)
+
+            Camera.CameraShakeState = {
+                FadingIn = 3,
+                FadingOut = 2,
+                Sustained = 0,
+                Inactive = 1
+            }
+
+            Combat.activeController.timeToNextAttack = 0
+            Combat.activeController.hitboxMagnitude = 120
+            Combat.activeController.increment = 3
+        end)
+    end)
+end)
+
+local inventoryPage = pages["กระเป๋า"]
+
+spawn(function()
+	while true do
+		task.wait(0.3)
+		if autoEquipEnabled and selectedWeapon then
+			pcall(function()
+				local character = player.Character
+				local backpack = player:FindFirstChild("Backpack")
+				if character and backpack then
+					local humanoid = character:FindFirstChildOfClass("Humanoid")
+					local tool = backpack:FindFirstChild(selectedWeapon)
+					if humanoid and tool then
+						humanoid:EquipTool(tool)
+					end
+				end
+			end)
+		end
+	end
+end)
+
+updateWeaponList()
+if #weaponList > 0 then
+	selectedWeapon = weaponList[1]
+	weaponBtn.Text = selectedWeapon
+end
+
+-- ====================== ระบบเปิด/ปิดเมนู ======================
+
+local function toggleMenu()
+	main.Visible = not main.Visible
+	if main.Visible then
+		toggleBtn.Text = "❌ ปิด"
+		toggleBtn.BackgroundColor3 = Color3.fromRGB(220, 60, 80)
+	else
+		toggleBtn.Text = "💙 DEKUz"
+		toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+	end
+end
+
+toggleBtn.MouseButton1Click:Connect(toggleMenu)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.K then
+		toggleMenu()
+	end
+end)
+
+toggleBtn.MouseEnter:Connect(function()
+	if not main.Visible then
+		TweenService:Create(toggleBtn, TweenInfo.new(0.15), {
+			BackgroundColor3 = Color3.fromRGB(0, 180, 255)
+		}):Play()
+	end
+end)
+
+toggleBtn.MouseLeave:Connect(function()
+	if not main.Visible then
+		TweenService:Create(toggleBtn, TweenInfo.new(0.15), {
+			BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+		}):Play()
+	end
+end)
